@@ -1,0 +1,13 @@
+{
+  "itemGroup.smokenbuffers": "Example Mod Tab",
+  "block.smokenbuffers.example_block": "Example Block",
+  "item.smokenbuffers.example_item": "Example Item",
+
+  "smokenbuffers.configuration.title": "Create: Smoke & Buffers Configs",
+  "smokenbuffers.configuration.section.smokenbuffers.common.toml": "Create: Smoke & Buffers Configs",
+  "smokenbuffers.configuration.section.smokenbuffers.common.toml.title": "Create: Smoke & Buffers Configs",
+  "smokenbuffers.configuration.items": "Item List",
+  "smokenbuffers.configuration.logDirtBlock": "Log Dirt Block",
+  "smokenbuffers.configuration.magicNumberIntroduction": "Magic Number Text",
+  "smokenbuffers.configuration.magicNumber": "Magic Number"
+}
