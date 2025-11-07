@@ -4,6 +4,7 @@ import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import io.github.kodiitulip.smokenbuffers.content.smokestack.blocks.AbstractSmokeStackRootBlock;
 import io.github.kodiitulip.smokenbuffers.registry.SmokeBuffersBlocks;
+import io.github.kodiitulip.smokenbuffers.registry.SmokeBuffersShapes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -13,6 +14,7 @@ import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -23,6 +25,8 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 
 public class AbstractSmokeStackExtenderBlock extends Block implements IWrenchable {
@@ -63,10 +67,15 @@ public class AbstractSmokeStackExtenderBlock extends Block implements IWrenchabl
                 && below.getValue(SHAPE) != AbstractSmokeStackRootBlock.SmokeStackBaseShape.SINGLE;
     }
 
-//    @Override
-//    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-//        return super.getShape(state, level, pos, context);
-//    }
+    @Override
+    protected @NotNull VoxelShape getShape(
+            BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
+        return switch (state.getValue(SHAPE)) {
+            case SINGLE -> SmokeBuffersShapes.SMOKE_STACK_SINGLE;
+            case DOUBLE -> SmokeBuffersShapes.SMOKE_STACK_DOUBLE;
+            case CONNECTED -> SmokeBuffersShapes.SMOKE_STACK_CONNECTED;
+        };
+    }
 
 
     @Override

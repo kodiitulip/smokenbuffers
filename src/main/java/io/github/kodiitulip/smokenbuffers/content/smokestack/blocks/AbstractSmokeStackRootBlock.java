@@ -1,10 +1,14 @@
 package io.github.kodiitulip.smokenbuffers.content.smokestack.blocks;
 
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
+import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.block.ProperWaterloggedBlock;
 import com.tterrag.registrate.util.entry.BlockEntry;
+import io.github.kodiitulip.smokenbuffers.content.smokestack.blockentities.SmokeStackRootBlockEntity;
 import io.github.kodiitulip.smokenbuffers.content.smokestack.blocks.extenders.AbstractSmokeStackExtenderBlock;
+import io.github.kodiitulip.smokenbuffers.registry.SmokeBuffersBlockEntities;
 import io.github.kodiitulip.smokenbuffers.registry.SmokeBuffersBlocks;
+import io.github.kodiitulip.smokenbuffers.registry.SmokeBuffersShapes;
 import net.createmod.catnip.lang.Lang;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -22,6 +26,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -35,12 +40,23 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class AbstractSmokeStackRootBlock extends Block implements IWrenchable, ProperWaterloggedBlock {
+public class AbstractSmokeStackRootBlock extends Block implements IWrenchable, ProperWaterloggedBlock,
+        IBE<SmokeStackRootBlockEntity> {
 
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
     public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
     public static final EnumProperty<SmokeStackBaseShape> SHAPE = EnumProperty.create("shape",
             SmokeStackBaseShape.class);
+
+    @Override
+    public Class<SmokeStackRootBlockEntity> getBlockEntityClass() {
+        return SmokeStackRootBlockEntity.class;
+    }
+
+    @Override
+    public BlockEntityType<? extends SmokeStackRootBlockEntity> getBlockEntityType() {
+        return SmokeBuffersBlockEntities.SMOKE_STACK_BE.get();
+    }
 
     public enum SmokeStackBaseShape implements StringRepresentable {
         SINGLE, DOUBLE, CONNECTED;
@@ -166,10 +182,15 @@ public class AbstractSmokeStackRootBlock extends Block implements IWrenchable, P
         return !state.canSurvive(level, pos) ? Blocks.AIR.defaultBlockState() : state;
     }
 
-//    @Override
-//    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-//        return super.getShape(state, level, pos, context);
-//    }
+    @Override
+    protected @NotNull VoxelShape getShape(
+            @NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
+        return switch (state.getValue(SHAPE)) {
+            case SINGLE -> SmokeBuffersShapes.SMOKE_STACK_SINGLE;
+            case DOUBLE -> SmokeBuffersShapes.SMOKE_STACK_DOUBLE;
+            case CONNECTED -> SmokeBuffersShapes.SMOKE_STACK_CONNECTED;
+        };
+    }
 
     @Override
     protected @NotNull FluidState getFluidState(@NotNull BlockState state) {
@@ -181,7 +202,7 @@ public class AbstractSmokeStackRootBlock extends Block implements IWrenchable, P
         return false;
     }
 
-    protected static BlockPos findTop(@NotNull LevelAccessor level, @NotNull BlockPos pos) {
+    public static BlockPos findTop(@NotNull LevelAccessor level, @NotNull BlockPos pos) {
         while (level.getBlockState(pos.above()).getBlock() instanceof AbstractSmokeStackExtenderBlock) {
             pos = pos.above();
         }

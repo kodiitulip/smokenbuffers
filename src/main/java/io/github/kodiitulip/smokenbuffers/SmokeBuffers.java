@@ -1,6 +1,9 @@
 package io.github.kodiitulip.smokenbuffers;
 
 import com.simibubi.create.foundation.data.CreateRegistrate;
+import io.github.kodiitulip.smokenbuffers.registry.SmokeBuffersBlockEntities;
+import io.github.kodiitulip.smokenbuffers.registry.SmokeBuffersBlocks;
+import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -23,6 +26,7 @@ public class SmokeBuffers {
   public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(MODID);
 
   public SmokeBuffers(IEventBus modEventBus, ModContainer modContainer) {
+    REGISTRATE.registerEventListeners(modEventBus);
     modEventBus.addListener(this::commonSetup);
 
     // WARN: Do not add this line if there are no @SubscribeEvent-annotated
@@ -36,6 +40,10 @@ public class SmokeBuffers {
 
   private void commonSetup(FMLCommonSetupEvent event) {
     LOGGER.info("[" + MODNAME + "]: Loading...");
+
+    SmokeBuffersBlocks.register();
+    SmokeBuffersBlockEntities.register();
+
   }
 
   private void addCreative(BuildCreativeModeTabContentsEvent event) {
@@ -48,5 +56,9 @@ public class SmokeBuffers {
 
   public static CreateRegistrate registrate() {
     return REGISTRATE;
+  }
+
+  public static ResourceLocation asResource(String path) {
+    return ResourceLocation.fromNamespaceAndPath(MODID, path);
   }
 }

@@ -8,6 +8,7 @@ import com.tterrag.registrate.util.entry.BlockEntry;
 import io.github.kodiitulip.smokenbuffers.SmokeBuffers;
 import io.github.kodiitulip.smokenbuffers.content.smokestack.blocks.AbstractSmokeStackRootBlock;
 import io.github.kodiitulip.smokenbuffers.content.smokestack.blocks.extenders.AbstractSmokeStackExtenderBlock;
+import io.github.kodiitulip.smokenbuffers.data.SmokeBuffersBlockStateGen;
 
 public class SmokeBuffersBlocks {
 
@@ -18,8 +19,11 @@ public class SmokeBuffersBlocks {
             .initialProperties(SharedProperties::softMetal)
             .transform(TagGen.pickaxeOnly())
             .loot(RegistrateBlockLootTables::dropSelf)
+            .blockstate(SmokeBuffersBlockStateGen.smokeStack())
             .item()
-            .model((c, p) -> p.withExistingParent(c.getName(), p.modLoc("block/smoke_stacks/base/single")))
+            .model((c, p) ->
+                    p.withExistingParent(c.getName(),
+                        p.modLoc("block/smoke_stacks/coal_burner/single")))
             .build()
             .register();
 
@@ -27,6 +31,7 @@ public class SmokeBuffersBlocks {
             "smoke_stack_extender", AbstractSmokeStackExtenderBlock::new)
             .initialProperties(SharedProperties::softMetal)
             .transform(TagGen.pickaxeOnly())
+            .blockstate(SmokeBuffersBlockStateGen.smokeStackExtender())
             .register();
 
     public static void register() {
