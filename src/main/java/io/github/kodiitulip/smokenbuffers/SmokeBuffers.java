@@ -28,13 +28,6 @@ public class SmokeBuffers {
   public SmokeBuffers(IEventBus modEventBus, ModContainer modContainer) {
     REGISTRATE.registerEventListeners(modEventBus);
     modEventBus.addListener(this::commonSetup);
-
-    // WARN: Do not add this line if there are no @SubscribeEvent-annotated
-    // functions in
-    // this class, like onServerStarting() below.
-    NeoForge.EVENT_BUS.register(this);
-
-    modEventBus.addListener(this::addCreative);
     modContainer.registerConfig(ModConfig.Type.COMMON, SmokeBuffersConfig.SPEC);
   }
 
@@ -43,15 +36,6 @@ public class SmokeBuffers {
 
     SmokeBuffersBlocks.register();
     SmokeBuffersBlockEntities.register();
-
-  }
-
-  private void addCreative(BuildCreativeModeTabContentsEvent event) {
-  }
-
-  @SubscribeEvent
-  public void onServerStarting(ServerStartingEvent event) {
-    LOGGER.info("[" + MODNAME + "]: Loading on the Server");
   }
 
   public static CreateRegistrate registrate() {
