@@ -1,37 +1,67 @@
 {
+  description = "Minecraft (Neo)Forge mod development environment";
+
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
-    flake-parts.url = "github:hercules-ci/flake-parts";
-    systems.url = "github:nix-systems/default";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = inputs:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = import inputs.systems;
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
 
-      perSystem = { config, self', pkgs, lib, system, ... }: let
-        java = pkgs.jetbrains.jdk-no-jcef;
-
-        nativeBuildInputs = with pkgs; [
-          java
-          git
-        ];
-
-        buildInputs = with pkgs; [
-          libGL
+        libraryInclde = with pkgs; [
           glfw3-minecraft
-          flite
+          openal
+          alsa-lib
+          libjack2
           libpulseaudio
+          pipewire
+
+          libGL
+          xorg.libX11
+          xorg.libXext
+          xorg.libXcursor
+          xorg.libXrandr
+          xorg.libXxf86vm
+          flite
         ];
-      in {
+      in
+      {
         devShells.default = pkgs.mkShell {
-          inherit nativeBuildInputs buildInputs;
+          buildInputs =
+            with pkgs;
+            [
+              # Java 21 (Temurin)
+              temurin-bin-21
+              gradle
+
+              # Build tools
+              git
+              unzip
+              wget
+            ]
+            ++ libraryInclde;
+
+          shellHook = ''
+            echo "Minecraft (Neo)Forge mod development environment"
+            echo "Java: $(java --version)"
+            echo "Gradle: $(gradle --version | grep Gradle)"
+          '';
 
           env = {
-            LD_LIBRARY_PATH = lib.makeLibraryPath buildInputs;
-            JAVA_HOME = "${java.home}";
+            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath libraryInclde;
+            GLFW_PLATFORM = "x11";
+            JAVA_HOME = pkgs.temurin-bin-21;
           };
         };
-      };
-    };
+      }
+    );
 }

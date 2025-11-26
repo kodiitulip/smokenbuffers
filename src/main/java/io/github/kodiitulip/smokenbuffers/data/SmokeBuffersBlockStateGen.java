@@ -27,19 +27,19 @@ public class SmokeBuffersBlockStateGen {
             builder.part()
                     .modelFile(topRimS)
                     .addModel()
-                    .condition(AbstractSmokeStackRootBlock.SHAPE, AbstractSmokeStackRootBlock.SmokeStackBaseShape.DOUBLE)
+                    .condition(AbstractSmokeStackRootBlock.SHAPE, SmokeStackShapeEnum.DOUBLE)
                     .end()
                     .part()
                     .modelFile(singleS)
                     .addModel()
-                    .condition(AbstractSmokeStackRootBlock.SHAPE, AbstractSmokeStackRootBlock.SmokeStackBaseShape.SINGLE)
+                    .condition(AbstractSmokeStackRootBlock.SHAPE, SmokeStackShapeEnum.SINGLE)
                     .end()
                     .part()
                     .modelFile(doubleS)
                     .addModel()
                     .condition(AbstractSmokeStackRootBlock.SHAPE,
-                            AbstractSmokeStackRootBlock.SmokeStackBaseShape.DOUBLE,
-                            AbstractSmokeStackRootBlock.SmokeStackBaseShape.CONNECTED)
+                            SmokeStackShapeEnum.DOUBLE,
+                            SmokeStackShapeEnum.CONNECTED)
                     .end();
         };
     }
@@ -58,19 +58,19 @@ public class SmokeBuffersBlockStateGen {
             builder.part()
                     .modelFile(topRimS)
                     .addModel()
-                    .condition(AbstractSmokeStackExtenderBlock.SHAPE, AbstractSmokeStackRootBlock.SmokeStackBaseShape.DOUBLE)
+                    .condition(AbstractSmokeStackExtenderBlock.SHAPE, SmokeStackShapeEnum.DOUBLE)
                     .end()
                     .part()
                     .modelFile(singleS)
                     .addModel()
-                    .condition(AbstractSmokeStackExtenderBlock.SHAPE, AbstractSmokeStackRootBlock.SmokeStackBaseShape.SINGLE)
+                    .condition(AbstractSmokeStackExtenderBlock.SHAPE, SmokeStackShapeEnum.SINGLE)
                     .end()
                     .part()
                     .modelFile(doubleS)
                     .addModel()
                     .condition(AbstractSmokeStackExtenderBlock.SHAPE,
-                            AbstractSmokeStackRootBlock.SmokeStackBaseShape.DOUBLE,
-                            AbstractSmokeStackRootBlock.SmokeStackBaseShape.CONNECTED)
+                            SmokeStackShapeEnum.DOUBLE,
+                            SmokeStackShapeEnum.CONNECTED)
                     .end();
         };
     }

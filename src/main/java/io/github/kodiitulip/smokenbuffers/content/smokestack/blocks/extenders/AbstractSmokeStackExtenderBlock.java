@@ -3,6 +3,7 @@ package io.github.kodiitulip.smokenbuffers.content.smokestack.blocks.extenders;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import io.github.kodiitulip.smokenbuffers.content.smokestack.blocks.AbstractSmokeStackRootBlock;
+import io.github.kodiitulip.smokenbuffers.data.SmokeStackShapeEnum;
 import io.github.kodiitulip.smokenbuffers.registry.SmokeBuffersBlocks;
 import io.github.kodiitulip.smokenbuffers.registry.SmokeBuffersShapes;
 import net.minecraft.core.BlockPos;
@@ -31,12 +32,12 @@ import org.jetbrains.annotations.NotNull;
 
 public class AbstractSmokeStackExtenderBlock extends Block implements IWrenchable {
 
-    public static final EnumProperty<AbstractSmokeStackRootBlock.SmokeStackBaseShape> SHAPE = EnumProperty.create("shape",
-            AbstractSmokeStackRootBlock.SmokeStackBaseShape.class);
+    public static final EnumProperty<SmokeStackShapeEnum> SHAPE = EnumProperty.create("shape",
+            SmokeStackShapeEnum.class);
 
     public AbstractSmokeStackExtenderBlock(Properties properties) {
         super(properties);
-        registerDefaultState(defaultBlockState().setValue(SHAPE, AbstractSmokeStackRootBlock.SmokeStackBaseShape.SINGLE));
+        registerDefaultState(defaultBlockState().setValue(SHAPE, SmokeStackShapeEnum.SINGLE));
     }
 
     @Override
@@ -44,13 +45,13 @@ public class AbstractSmokeStackExtenderBlock extends Block implements IWrenchabl
         Level world = context.getLevel();
         BlockPos pos = context.getClickedPos();
 
-        if (context.getClickLocation().y < pos.getY() + 0.5f || state.getValue(SHAPE) == AbstractSmokeStackRootBlock.SmokeStackBaseShape.SINGLE)
+        if (context.getClickLocation().y < pos.getY() + 0.5f || state.getValue(SHAPE) == SmokeStackShapeEnum.SINGLE)
             return IWrenchable.super.onSneakWrenched(state, context);
 
         if (!(world instanceof ServerLevel))
             return InteractionResult.SUCCESS;
 
-        world.setBlock(pos, state.setValue(SHAPE, AbstractSmokeStackRootBlock.SmokeStackBaseShape.SINGLE), Block.UPDATE_ALL);
+        world.setBlock(pos, state.setValue(SHAPE, SmokeStackShapeEnum.SINGLE), Block.UPDATE_ALL);
         IWrenchable.playRemoveSound(world, pos);
         return InteractionResult.SUCCESS;
     }
@@ -63,8 +64,11 @@ public class AbstractSmokeStackExtenderBlock extends Block implements IWrenchabl
     @Override
     protected boolean canSurvive(@NotNull BlockState state, @NotNull LevelReader level, @NotNull BlockPos pos) {
         BlockState below = level.getBlockState(pos.below());
-        return (below.getBlock() instanceof AbstractSmokeStackExtenderBlock || SmokeBuffersBlocks.SMOKE_STACK.has(below))
-                && below.getValue(SHAPE) != AbstractSmokeStackRootBlock.SmokeStackBaseShape.SINGLE;
+        boolean isExtender = below.getBlock() instanceof AbstractSmokeStackExtenderBlock
+                && below.getValue(SHAPE) != SmokeStackShapeEnum.SINGLE;
+        boolean isRoot = below.getBlock() instanceof AbstractSmokeStackRootBlock
+                && below.getValue(AbstractSmokeStackRootBlock.SHAPE) != SmokeStackShapeEnum.SINGLE;
+        return isExtender || isRoot;
     }
 
     @Override
@@ -119,12 +123,12 @@ public class AbstractSmokeStackExtenderBlock extends Block implements IWrenchabl
             return state;
 
         if (direction == Direction.UP) {
-            boolean connected = state.getValue(SHAPE) == AbstractSmokeStackRootBlock.SmokeStackBaseShape.CONNECTED;
+            boolean connected = state.getValue(SHAPE) == SmokeStackShapeEnum.CONNECTED;
             boolean shouldConnect = level.getBlockState(pos.above()).is(this);
             if (!connected && shouldConnect)
-                return state.setValue(SHAPE, AbstractSmokeStackRootBlock.SmokeStackBaseShape.CONNECTED);
+                return state.setValue(SHAPE, SmokeStackShapeEnum.CONNECTED);
             if (connected && !shouldConnect)
-                return state.setValue(SHAPE, AbstractSmokeStackRootBlock.SmokeStackBaseShape.DOUBLE);
+                return state.setValue(SHAPE, SmokeStackShapeEnum.DOUBLE);
             return state;
         }
         return !state.canSurvive(level, pos) ? Blocks.AIR.defaultBlockState() : state;

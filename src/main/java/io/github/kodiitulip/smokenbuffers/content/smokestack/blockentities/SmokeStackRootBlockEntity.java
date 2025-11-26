@@ -8,6 +8,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
@@ -32,13 +33,13 @@ public class SmokeStackRootBlockEntity extends SmartBlockEntity {
             return;
 
         RandomSource random = level.getRandom();
-        BlockPos top = AbstractSmokeStackRootBlock.findTop(level, getBlockPos());
+        Vec3 top = AbstractSmokeStackRootBlock.findTop(level, getBlockPos());
         level.addAlwaysVisibleParticle(
-                ParticleTypes.CAMPFIRE_COSY_SMOKE, true,
-                top.getX() + 0.5D + random.nextDouble() / (random.nextBoolean() ? 3D : -3D),
-                top.getY() + 0.5D + random.nextDouble() + random.nextDouble(),
-                top.getZ() + 0.5D + random.nextDouble() / (random.nextBoolean() ? 3D : -3D),
-                0.0D, 0.0D, 0.0D
+            ParticleTypes.CAMPFIRE_COSY_SMOKE, true,
+            top.x() + random.nextDouble() / (random.nextBoolean() ? 3D : -3D),
+            top.y() + random.nextDouble() + random.nextDouble(),
+            top.z() + random.nextDouble() / (random.nextBoolean() ? 3D : -3D),
+            0.0D, 0.07D, 0.0D
         );
     }
 }

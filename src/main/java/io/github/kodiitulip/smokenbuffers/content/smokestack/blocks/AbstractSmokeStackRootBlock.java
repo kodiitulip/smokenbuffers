@@ -6,14 +6,13 @@ import com.simibubi.create.foundation.block.ProperWaterloggedBlock;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import io.github.kodiitulip.smokenbuffers.content.smokestack.blockentities.SmokeStackRootBlockEntity;
 import io.github.kodiitulip.smokenbuffers.content.smokestack.blocks.extenders.AbstractSmokeStackExtenderBlock;
+import io.github.kodiitulip.smokenbuffers.data.SmokeStackShapeEnum;
 import io.github.kodiitulip.smokenbuffers.registry.SmokeBuffersBlockEntities;
 import io.github.kodiitulip.smokenbuffers.registry.SmokeBuffersBlocks;
 import io.github.kodiitulip.smokenbuffers.registry.SmokeBuffersShapes;
-import net.createmod.catnip.lang.Lang;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
@@ -35,6 +34,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
@@ -45,8 +45,8 @@ public class AbstractSmokeStackRootBlock extends Block implements IWrenchable, P
 
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
     public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
-    public static final EnumProperty<SmokeStackBaseShape> SHAPE = EnumProperty.create("shape",
-            SmokeStackBaseShape.class);
+    public static final EnumProperty<SmokeStackShapeEnum> SHAPE = EnumProperty.create("shape",
+            SmokeStackShapeEnum.class);
 
     @Override
     public Class<SmokeStackRootBlockEntity> getBlockEntityClass() {
@@ -58,21 +58,12 @@ public class AbstractSmokeStackRootBlock extends Block implements IWrenchable, P
         return SmokeBuffersBlockEntities.SMOKE_STACK_BE.get();
     }
 
-    public enum SmokeStackBaseShape implements StringRepresentable {
-        SINGLE, DOUBLE, CONNECTED;
-
-        @Override
-        public @NotNull String getSerializedName() {
-            return Lang.asId(name());
-        }
-    }
-
     public AbstractSmokeStackRootBlock(Properties properties) {
         super(properties);
         registerDefaultState(defaultBlockState()
                 .setValue(ENABLED, true)
                 .setValue(WATERLOGGED, false)
-                .setValue(SHAPE, SmokeStackBaseShape.SINGLE));
+                .setValue(SHAPE, SmokeStackShapeEnum.SINGLE));
     }
 
     @Override
@@ -85,13 +76,13 @@ public class AbstractSmokeStackRootBlock extends Block implements IWrenchable, P
         Level world = context.getLevel();
         BlockPos pos = context.getClickedPos();
 
-        if (context.getClickLocation().y < pos.getY() + 0.5f || state.getValue(SHAPE) == SmokeStackBaseShape.SINGLE)
+        if (context.getClickLocation().y < pos.getY() + 0.5f || state.getValue(SHAPE) == SmokeStackShapeEnum.SINGLE)
             return IWrenchable.super.onSneakWrenched(state, context);
 
         if (!(world instanceof ServerLevel))
             return InteractionResult.SUCCESS;
 
-        world.setBlock(pos, state.setValue(SHAPE, SmokeStackBaseShape.SINGLE), Block.UPDATE_ALL);
+        world.setBlock(pos, state.setValue(SHAPE, SmokeStackShapeEnum.SINGLE), Block.UPDATE_ALL);
         IWrenchable.playRemoveSound(world, pos);
         return InteractionResult.SUCCESS;
     }
@@ -135,29 +126,33 @@ public class AbstractSmokeStackRootBlock extends Block implements IWrenchable, P
 
     private <B extends BlockEntry<? extends AbstractSmokeStackExtenderBlock>> void incrementSize(
             @NotNull LevelAccessor level, BlockPos pos, @NotNull B extenderBlockEntry) {
-        BlockState blockState = level.getBlockState(pos);
-        if (blockState.getValue(SHAPE) == SmokeStackBaseShape.SINGLE){
-            level.setBlock(pos, blockState.setValue(SHAPE, SmokeStackBaseShape.DOUBLE), Block.UPDATE_ALL);
+        BlockState base = level.getBlockState(pos);
+        if (!base.hasProperty(SHAPE))
+            return;
+
+        if (base.getValue(SHAPE) == SmokeStackShapeEnum.SINGLE) {
+            level.setBlock(pos, base.setValue(SHAPE, SmokeStackShapeEnum.DOUBLE), Block.UPDATE_ALL);
             return;
         }
 
         BlockPos above = pos.above();
         for (int i = 0; i < 7; i++) {
-            blockState = level.getBlockState(above);
+            base = level.getBlockState(above);
 
-            if (extenderBlockEntry.has(blockState)) {
-                if (blockState.getValue(SHAPE) == SmokeStackBaseShape.SINGLE) {
-                    level.setBlock(above, blockState.setValue(SHAPE, SmokeStackBaseShape.DOUBLE), Block.UPDATE_ALL);
+            if (base.getBlock() instanceof AbstractSmokeStackExtenderBlock) {
+                if (base.getValue(AbstractSmokeStackExtenderBlock.SHAPE) == SmokeStackShapeEnum.SINGLE) {
+                    level.setBlock(above, base.setValue(AbstractSmokeStackExtenderBlock.SHAPE,
+                                    SmokeStackShapeEnum.DOUBLE), Block.UPDATE_ALL);
                     return;
                 }
                 above = above.above();
                 continue;
             }
 
-            if (!blockState.canBeReplaced())
+            if (!base.canBeReplaced())
                 return;
 
-            level.setBlock(above, SmokeBuffersBlocks.SMOKE_STACK_EXTENDER.getDefaultState(), Block.UPDATE_ALL);
+            level.setBlock(above, extenderBlockEntry.getDefaultState(), Block.UPDATE_ALL);
             return;
         }
     }
@@ -170,13 +165,13 @@ public class AbstractSmokeStackRootBlock extends Block implements IWrenchable, P
             return state;
 
         if (direction == Direction.UP) {
-            boolean connected = state.getValue(SHAPE) == SmokeStackBaseShape.CONNECTED;
+            boolean connected = state.getValue(SHAPE) == SmokeStackShapeEnum.CONNECTED;
             boolean shouldConnect =
                     level.getBlockState(pos.above()).getBlock() instanceof AbstractSmokeStackExtenderBlock;
             if (!connected && shouldConnect)
-                return state.setValue(SHAPE, SmokeStackBaseShape.CONNECTED);
+                return state.setValue(SHAPE, SmokeStackShapeEnum.CONNECTED);
             if (connected && !shouldConnect)
-                return state.setValue(SHAPE, SmokeStackBaseShape.DOUBLE);
+                return state.setValue(SHAPE, SmokeStackShapeEnum.DOUBLE);
             return state;
         }
         return !state.canSurvive(level, pos) ? Blocks.AIR.defaultBlockState() : state;
@@ -202,10 +197,17 @@ public class AbstractSmokeStackRootBlock extends Block implements IWrenchable, P
         return false;
     }
 
-    public static BlockPos findTop(@NotNull LevelAccessor level, @NotNull BlockPos pos) {
+    public static Vec3 findTop(@NotNull LevelAccessor level, @NotNull BlockPos pos) {
         while (level.getBlockState(pos.above()).getBlock() instanceof AbstractSmokeStackExtenderBlock) {
             pos = pos.above();
         }
-        return pos;
+        BlockState state = level.getBlockState(pos);
+        boolean isExtender = state.getBlock() instanceof AbstractSmokeStackExtenderBlock;
+        EnumProperty<SmokeStackShapeEnum> property = isExtender ? AbstractSmokeStackExtenderBlock.SHAPE : SHAPE;
+        return new Vec3(
+            pos.getX() + 0.5D,
+            pos.getY() + (state.getValue(property) == SmokeStackShapeEnum.SINGLE ? 0.5D : 1.0D),
+            pos.getZ() + 0.5D
+        );
     }
 }

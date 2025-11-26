@@ -28,14 +28,15 @@ public class SmokeBuffers {
   public SmokeBuffers(IEventBus modEventBus, ModContainer modContainer) {
     REGISTRATE.registerEventListeners(modEventBus);
     modEventBus.addListener(this::commonSetup);
+
+    SmokeBuffersBlocks.register();
+    SmokeBuffersBlockEntities.register();
+
     modContainer.registerConfig(ModConfig.Type.COMMON, SmokeBuffersConfig.SPEC);
   }
 
   private void commonSetup(FMLCommonSetupEvent event) {
     LOGGER.info("[" + MODNAME + "]: Loading...");
-
-    SmokeBuffersBlocks.register();
-    SmokeBuffersBlockEntities.register();
   }
 
   public static CreateRegistrate registrate() {

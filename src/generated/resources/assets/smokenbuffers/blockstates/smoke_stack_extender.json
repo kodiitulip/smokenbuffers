@@ -1,0 +1,28 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "smokenbuffers:block/smoke_stacks/coal_burner/top_rim"
+      },
+      "when": {
+        "shape": "double"
+      }
+    },
+    {
+      "apply": {
+        "model": "smokenbuffers:block/smoke_stacks/coal_burner/single"
+      },
+      "when": {
+        "shape": "single"
+      }
+    },
+    {
+      "apply": {
+        "model": "smokenbuffers:block/smoke_stacks/coal_burner/double"
+      },
+      "when": {
+        "shape": "double|connected"
+      }
+    }
+  ]
+}
